@@ -39,7 +39,7 @@ typedef struct s_dongle
 {
 	int				id;				// Dongle ID
 	int				is_available;	// 1 if on table, 0 if held by a coder
-	long			available_at;	// Timestamp when cooldown finishes
+	long			last_released_time;	// Timestamp when it was last dropped
 	t_queue			wait_queue;		// The personal waiting line for THIS specific dongle
 	pthread_mutex_t	mutex;			// Lock to protect physical access to this dongle
 }	t_dongle;
@@ -59,7 +59,7 @@ typedef struct s_coder
 /* The Master Struct: Holds everything together to avoid global variables */
 typedef struct s_simulation
 {
-	int				finished;				// Flag (1) if someone burned out or everyone is done
+	int				sim_running;			// Flag (1 if running, 0 if over)
 	t_config		config;					// The parsed command-line arguments
 	t_coder			*coders_array;			// Array of all coders
 	t_dongle		*dongles_array;			// Array of all dongles
@@ -74,14 +74,21 @@ typedef struct s_simulation
 	pthread_mutex_t	state_mutex;			// Global lock for modifying queues, checking finishes, etc.
 	pthread_mutex_t	log_mutex;				// Global lock so printfs don't overlap
 	pthread_cond_t	table_cond;				// Where coders sleep until it's their turn for dongles
+
+	pthread_mutex_t	sim_start_lock;			// Lock for synchronizing the start
+	pthread_cond_t	sim_start_cond;			// Cond for synchronizing the start
 }	t_simulation;
 
 int parse_args(int argc, char **argv, t_config *config);
 long get_time_ms(void);
-void sleep_ms(long milliseconds);
+void sleep_ms(long milliseconds, t_simulation *sim);
 int init_simulation(t_simulation *sim, t_config *config);
 void    *routine(void *arg);
 int start_threads(t_simulation *sim, t_config *config);
 void log_action(t_coder *coder, char *message);
+void *monitor_routine(void *arg);
+void free_simulation(t_simulation *sim);
+int is_simulation_running(t_simulation *sim);
+void wait_for_start_signal(t_simulation *sim);
 
 #endif

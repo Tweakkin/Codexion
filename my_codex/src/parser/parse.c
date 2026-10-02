@@ -1,7 +1,6 @@
 #include "codexion.h"
-#include <string.h>
-#include <stdlib.h>
 
+/* Checks if a string contains only positive digits. The 9-char limit prevents INT_MAX overflow. */
 int is_number(char *s)
 {
     int i;
@@ -20,6 +19,7 @@ int is_number(char *s)
     return (1);
 }
 
+/* Validates that exactly 8 arguments are passed, all numeric, and scheduler is exactly fifo or edf. */
 static int is_args_valid(int argc, char **argv)
 {
 	if (argc != 9 || !is_number(argv[1]) || !is_number(argv[2])
@@ -31,6 +31,7 @@ static int is_args_valid(int argc, char **argv)
 	return (1);
 }
 
+/* Ensures no configuration variables (like coders_num or times) are negative or zero. */
 static int  is_config_valid(t_config *config)
 {
     if (config->coders_num <= 0 || config->burnout_time < 0
@@ -47,6 +48,7 @@ void	print_error(void)
 	fprintf(stderr, "Error: invalid arguments\n");
 }
 
+/* parsing function: validates input, converts strings to integers, and fills the config struct. */
 int parse_args(int argc, char **argv, t_config *config)
 {
     if (!is_args_valid(argc, argv))

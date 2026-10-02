@@ -7,7 +7,8 @@ SRC = src/main.c \
       src/parser/parse.c \
       src/helpers/utils.c \
       src/setup/init.c \
-	  src/threads/coder_routine.c
+	  src/threads/coder_routine.c \
+	  src/threads/monitor.c 
 
 OBJ = $(SRC:.c=.o)
 
