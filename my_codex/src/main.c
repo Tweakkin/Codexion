@@ -1,54 +1,75 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: user <user@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/10/07 20:42:00 by user             #+#    #+#             */
+/*   Updated: 2026/10/07 20:42:00 by user            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
-int main(int argc, char **argv)
+static int	start_and_sync(t_simulation *sim, t_config *config)
 {
-    // Holds the rules
-    t_config config;
-    // Holds The prepared room
-    t_simulation sim;
+	int	j;
 
-    // Parse commands line, and fills up config
-    if (parse_args(argc, argv, &config) != 0)
+	if (start_threads(sim, config) != 0)
 		return (1);
-    
-    // build the room (Sim): allocate memory, link coders/dongles, init mutexes
-    if (init_simulation(&sim, &config) != 0)
-    {
-        printf("Failed to initialize simulation\n");
-        return (1);
-    }
-    
-    printf("ALL GOOD! Room is built.\n");
+	if (pthread_create(&sim->monitor_thread, NULL,
+			monitor_routine, sim) != 0)
+	{
+		free_simulation(sim, config->coders_num);
+		return (1);
+	}
+	pthread_mutex_lock(&sim->sim_start_lock);
+	pthread_mutex_lock(&sim->state_mutex);
+	sim->start_time = get_time_ms();
+	j = 0;
+	while (j < config->coders_num)
+	{
+		sim->coders_array[j].last_compile_start = sim->start_time;
+		j++;
+	}
+	sim->sim_running = 1;
+	pthread_mutex_unlock(&sim->state_mutex);
+	pthread_cond_broadcast(&sim->sim_start_cond);
+	pthread_mutex_unlock(&sim->sim_start_lock);
+	return (0);
+}
 
-    // Spawns all the threads (Coders and Monitor start, but hit the wait_for_start_signal wall)
-    start_threads(&sim, &config);
-    pthread_create(&sim.monitor_thread, NULL, monitor_routine, &sim);
+static int	cleanup_threads(t_simulation *sim, t_config *config)
+{
+	if (join_threads(sim, config->coders_num) != 0)
+	{
+		free_simulation(sim, 0);
+		return (1);
+	}
+	if (pthread_join(sim->monitor_thread, NULL) != 0)
+	{
+		free_simulation(sim, 0);
+		return (1);
+	}
+	return (0);
+}
 
-    // The organizer sets everyone's starting clock
-    pthread_mutex_lock(&sim.state_mutex);
-    sim.start_time = get_time_ms();
-    for (int j = 0; j < config.coders_num; j++)
-    {
-        sim.coders_array[j].last_compile_start = sim.start_time;
-    }
-    sim.sim_running = 1;
-    pthread_mutex_unlock(&sim.state_mutex);
+int	main(int argc, char **argv)
+{
+	t_config		config;
+	t_simulation	sim;
 
-    // The organizer announces Go
-    pthread_mutex_lock(&sim.sim_start_lock);
-    pthread_cond_broadcast(&sim.sim_start_cond);
-    pthread_mutex_unlock(&sim.sim_start_lock);
-
-    // Wait for all threads to finish their work before closing the program
-    int i = 0;
-    while (i < config.coders_num)
-    {
-        pthread_join(sim.coders_array[i].thread, NULL);
-        i++;
-    }
-    pthread_join(sim.monitor_thread, NULL);
-
-    // Destory mutexes and free coder and dongle array
-    free_simulation(&sim);
-    return (0);
+	if (parse_args(argc, argv, &config) != 0)
+		return (1);
+	if (config.compiles_number == 0)
+		return (0);
+	if (init_simulation(&sim, &config) != 0)
+		return (1);
+	if (start_and_sync(&sim, &config) != 0)
+		return (1);
+	if (cleanup_threads(&sim, &config) != 0)
+		return (1);
+	free_simulation(&sim, 0);
+	return (0);
 }
