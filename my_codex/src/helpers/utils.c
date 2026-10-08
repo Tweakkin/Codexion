@@ -13,7 +13,8 @@
 #include "codexion.h"
 
 /*
-	Gets the current real-world time and converts it completely into milliseconds.
+	Gets the current real-world time and converts it
+	completely into milliseconds.
 */
 long	get_time_ms(void)
 {
