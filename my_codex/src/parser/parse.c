@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "codexion.h"
-#include <limits.h>
 
 static int	is_number(char *s)
 {
@@ -62,9 +61,14 @@ static int	is_config_valid(t_config *config)
 
 static void	print_error(void)
 {
-	fprintf(stderr, "Error: invalid arguments\n");
+	printf("Error: invalid arguments\n");
 }
 
+/*
+    Validates the arguments format.
+    Converts the string arguments into integers and stores them.
+    Validates the actual values (no negatives).
+*/
 int	parse_args(int argc, char **argv, t_config *config)
 {
 	if (!is_args_valid(argc, argv))

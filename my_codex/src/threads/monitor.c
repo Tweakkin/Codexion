@@ -12,6 +12,10 @@
 
 #include "codexion.h"
 
+/*
+	Checks if a single coder has exceeded their burnout time.
+	If they have, it stops the simulation, wakes everyone up to exit,
+*/
 static int	check_burnout(t_simulation *sim, int i)
 {
 	long	time_now;
@@ -30,6 +34,12 @@ static int	check_burnout(t_simulation *sim, int i)
 	return (0);
 }
 
+/*
+	Loops through every single coder to inspect them.
+	Checks if any coder has burned out.
+	Counts how many coders have successfully hit their compile target.
+	If EVERY coder is finished, it officially ends the simulation.
+*/
 static int	check_coders(t_simulation *sim)
 {
 	int	i;
@@ -58,6 +68,10 @@ static int	check_coders(t_simulation *sim)
 	return (0);
 }
 
+/*
+	Every 1000 microseconds (1ms), it scans the table to see if anyone
+	has died or if everyone has finished their work.
+*/
 void	*monitor_routine(void *arg)
 {
 	t_simulation	*sim;

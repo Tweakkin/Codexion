@@ -38,3 +38,8 @@ The project handles several concurrency issues to prevent crashes and deadlocks:
 - **Deadlocks**: Handled by implementing a strict queue/request system and ensuring that coders only grab dongles when both are available and it is their turn.
 - **Starvation**: Prevented by utilizing a priority queue (FIFO or EDF scheduler) so every coder gets a fair chance to acquire dongles before they burn out.
 - **Output mixing**: Handled by locking a specific log mutex before printing to standard output, ensuring messages don't overlap.
+
+## Thread synchronization mechanisms
+
+- **Mutexes (`pthread_mutex_t`)** protect shared data. The state mutex lets coders update their compile times and counters while the monitor reads them safely. Each dongle has a mutex, and the log mutex protects printed messages.
+- **Condition variables (`pthread_cond_t`)** let coders sleep while waiting for dongles. When dongles are released or the simulation stops, waiting coders are woken up to check the shared state again. A separate condition variable makes all threads wait for the simulation's start signal.

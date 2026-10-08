@@ -12,6 +12,11 @@
 
 #include "codexion.h"
 
+/*
+    Spawns coders and monitor
+    Sets exact starting time for everyone
+    Broadcast starting signal for everyone to wakeup
+*/
 static int	start_and_sync(t_simulation *sim, t_config *config)
 {
 	int	j;
@@ -40,6 +45,10 @@ static int	start_and_sync(t_simulation *sim, t_config *config)
 	return (0);
 }
 
+/*
+    Waits for all coder threads and the monitor thread to successfully
+    finish and join back into the main program before cleaning up.
+*/
 static int	cleanup_threads(t_simulation *sim, t_config *config)
 {
 	if (join_threads(sim, config->coders_num) != 0)
@@ -55,6 +64,10 @@ static int	cleanup_threads(t_simulation *sim, t_config *config)
 	return (0);
 }
 
+/*
+    Parse args, init mem and mutexes
+    start threads, wait for them, free and exit
+*/
 int	main(int argc, char **argv)
 {
 	t_config		config;

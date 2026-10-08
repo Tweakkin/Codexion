@@ -7,7 +7,7 @@ SRC = src/main.c \
       src/parser/parse.c \
       src/helpers/utils.c \
       src/setup/init.c \
-      src/setup/init_cleanup.c \
+      src/setup/setup.c \
       src/threads/coder_routine.c \
       src/threads/coder_queue.c \
       src/threads/coder_dongles.c \

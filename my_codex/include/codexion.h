@@ -19,6 +19,7 @@
 # include <sys/time.h>
 # include <unistd.h>
 # include <string.h>
+# include <limits.h>
 
 typedef struct s_config
 {
@@ -69,7 +70,6 @@ typedef struct s_coder
 	struct s_simulation	*simulation;
 }	t_coder;
 
-/* The Master Struct */
 typedef struct s_simulation
 {
 	int				sim_running;
@@ -104,6 +104,7 @@ void	push_request(t_queue *queue, t_request req);
 int		can_take_dongles(t_coder *coder);
 void	pop_request(t_queue *queue);
 void	drop_dongles(t_coder *coder);
+void	lock_ordered_dongles(t_coder *coder);
 int		take_dongles(t_coder *coder);
 
 #endif

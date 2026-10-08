@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   init_cleanup.c                                     :+:      :+:    :+:   */
+/*   setup.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: user <user@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,6 +12,11 @@
 
 #include "codexion.h"
 
+/*
+** Waits for 'count' number of threads to finish their execution.
+** This is used both to clean up normally at the end, and to wait
+** for any successfully created threads if a later thread creation fails.
+*/
 int	join_threads(t_simulation *sim, int count)
 {
 	int	i;
@@ -26,6 +31,11 @@ int	join_threads(t_simulation *sim, int count)
 	return (0);
 }
 
+/*
+** Spawns a new thread for every coder.
+** Each thread goes directly into the 'routine' function.
+** If a thread fails to create, it triggers an emergency cleanup.
+*/
 int	start_threads(t_simulation *sim, t_config *config)
 {
 	int	i;
@@ -44,6 +54,9 @@ int	start_threads(t_simulation *sim, t_config *config)
 	return (0);
 }
 
+/*
+	Cleans up all memory and destroys all locks.
+*/
 void	free_simulation(t_simulation *sim, int count)
 {
 	int	i;

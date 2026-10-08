@@ -12,6 +12,30 @@
 
 #include "codexion.h"
 
+void	lock_ordered_dongles(t_coder *coder)
+{
+	if (coder->left_dongle->id < coder->right_dongle->id)
+	{
+		pthread_mutex_lock(&coder->left_dongle->mutex);
+		log_action(coder, "has taken a dongle");
+		pthread_mutex_lock(&coder->right_dongle->mutex);
+		log_action(coder, "has taken a dongle");
+	}
+	else
+	{
+		pthread_mutex_lock(&coder->right_dongle->mutex);
+		log_action(coder, "has taken a dongle");
+		pthread_mutex_lock(&coder->left_dongle->mutex);
+		log_action(coder, "has taken a dongle");
+	}
+}
+
+/*
+	The process of letting go of the dongles after compiling.
+	Unlocks the physical mutexes.
+	Updates the availability and cooldown timestamps for both dongles.
+	Wakes up all other sleeping coders to let them check the dongles.
+*/
 void	drop_dongles(t_coder *coder)
 {
 	long	time_now;
@@ -29,6 +53,13 @@ void	drop_dongles(t_coder *coder)
 	pthread_mutex_unlock(&coder->simulation->state_mutex);
 }
 
+/*
+	the work a coder does once they have the dongles.
+	Updates their last compile time (resetting their burnout clock).
+	Simulates compiling time, then drops the dongles.
+	Simulates debugging time.
+	Simulates refactoring time.
+*/
 static void	compile_cycle(t_coder *coder)
 {
 	pthread_mutex_lock(&coder->simulation->state_mutex);
@@ -50,6 +81,13 @@ static void	compile_cycle(t_coder *coder)
 		coder->simulation);
 }
 
+/*
+	loop for every coder thread.
+	Freezes until the monitor yells GO.
+	Pauses even-numbered coders slightly
+	Continuously tries to take dongles and run the compile cycle
+	until they either finish their required compiles or someone dies.
+*/
 void	*routine(void *arg)
 {
 	t_coder	*coder;

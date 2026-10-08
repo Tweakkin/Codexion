@@ -21,6 +21,11 @@ static void	swap_requests(t_queue *queue)
 	queue->requests[1] = temp;
 }
 
+/*
+	Who has the lower priority value
+	If tied, who has compiled the least amount of times.
+	If still tied, whoever has the lower coder ID wins.
+*/
 static int	should_swap(t_queue *queue)
 {
 	t_request	*r0;
@@ -48,6 +53,9 @@ void	push_request(t_queue *queue, t_request req)
 	queue->size++;
 }
 
+/*
+	Checks if a coder is legally allowed to take both dongles.
+*/
 int	can_take_dongles(t_coder *coder)
 {
 	if (!coder->left_dongle->is_available)

@@ -12,6 +12,10 @@
 
 #include "codexion.h"
 
+/*
+    Give the coder its infos
+    and link it to its dongles
+*/
 static void	init_coder(t_simulation *sim, t_config *config, int i)
 {
 	sim->coders_array[i].id = i + 1;
@@ -26,6 +30,10 @@ static void	init_coder(t_simulation *sim, t_config *config, int i)
 	sim->dongles_array[i].wait_queue.size = 0;
 }
 
+/*
+    Loops through coders, sets them up
+    and init their dongle mutexes
+*/
 static int	init_coders_dongles(t_simulation *sim, t_config *config)
 {
 	int	i;
@@ -46,6 +54,10 @@ static int	init_coders_dongles(t_simulation *sim, t_config *config)
 	return (0);
 }
 
+/*
+    Sets global starting flags
+    init all locks
+*/
 static int	init_mutexes(t_simulation *sim)
 {
 	sim->sim_running = 0;
@@ -66,6 +78,11 @@ static int	init_mutexes(t_simulation *sim)
 	return (0);
 }
 
+/*
+    Allocate mem for coders and dongles
+    Configure each coder and their dongles
+    init mutexes
+*/
 int	init_simulation(t_simulation *sim, t_config *config)
 {
 	sim->config = *config;

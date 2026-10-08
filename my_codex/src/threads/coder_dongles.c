@@ -12,6 +12,9 @@
 
 #include "codexion.h"
 
+/*
+	Priority value decided by scheduler
+*/
 static void	build_request(t_coder *coder, t_request *req)
 {
 	req->coder_id = coder->id;
@@ -27,6 +30,10 @@ static void	build_request(t_coder *coder, t_request *req)
 	req->compiles_done = coder->compile_count;
 }
 
+/*
+	Checks if enough time has passed since a dongle was last dropped.
+	Returns 1 if the dongle is still in cooldown
+*/
 static int	check_cooldown(t_coder *coder, long time_now, long cd)
 {
 	if (time_now - coder->left_dongle->last_released_time < cd
@@ -36,6 +43,12 @@ static int	check_cooldown(t_coder *coder, long time_now, long cd)
 	return (0);
 }
 
+/*
+	The coder stays stuck in an infinite loop here until:
+	The simulation ends
+	Or Both dongles are free
+	Using a condition variable to sleep.
+*/
 static int	wait_for_turn(t_coder *coder, long cooldown)
 {
 	long	time_now;
@@ -63,6 +76,12 @@ static int	wait_for_turn(t_coder *coder, long cooldown)
 	return (1);
 }
 
+/*
+	Removes their requests from the waiting lines.
+	Marks both dongles as unavailable.
+	Locks the actual mutexes to claim them and prints the action.
+	Handles the edge case of 1 coder only having 1 dongle.
+*/
 static int	grab_dongles(t_coder *coder)
 {
 	pop_request(&coder->left_dongle->wait_queue);
@@ -77,13 +96,16 @@ static int	grab_dongles(t_coder *coder)
 		pthread_mutex_unlock(&coder->left_dongle->mutex);
 		return (0);
 	}
-	pthread_mutex_lock(&coder->left_dongle->mutex);
-	log_action(coder, "has taken a dongle");
-	pthread_mutex_lock(&coder->right_dongle->mutex);
-	log_action(coder, "has taken a dongle");
+	lock_ordered_dongles(coder);
 	return (1);
 }
 
+/*
+	function for acquiring dongles.
+	Builds a request and push it into both dongles
+	Waits patiently until they are allowed to take the dongles.
+	Grabs the dongles and locks them.
+*/
 int	take_dongles(t_coder *coder)
 {
 	t_request	req;

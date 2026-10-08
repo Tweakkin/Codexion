@@ -12,6 +12,9 @@
 
 #include "codexion.h"
 
+/*
+	Gets the current real-world time and converts it completely into milliseconds.
+*/
 long	get_time_ms(void)
 {
 	struct timeval	time;
@@ -20,6 +23,11 @@ long	get_time_ms(void)
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
+/*
+	Custom sleep function.
+	Instead of blindly sleeping for the whole duration, it sleeps in tiny 500
+	microsecond chunks and constantly checks if the simulation has ended.
+*/
 void	sleep_ms(long milliseconds, t_simulation *sim)
 {
 	long	start_time;
@@ -33,6 +41,9 @@ void	sleep_ms(long milliseconds, t_simulation *sim)
 	}
 }
 
+/*
+	A barrier that freezes the thread right after it is created.
+*/
 void	wait_for_start_signal(t_simulation *sim)
 {
 	pthread_mutex_lock(&sim->sim_start_lock);
@@ -44,6 +55,9 @@ void	wait_for_start_signal(t_simulation *sim)
 	pthread_mutex_unlock(&sim->sim_start_lock);
 }
 
+/*
+	Safely checks if the simulation is still running (1) or over (0).
+*/
 int	is_simulation_running(t_simulation *sim)
 {
 	int	is_running;
